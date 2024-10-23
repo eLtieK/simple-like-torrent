@@ -1,11 +1,9 @@
-from routes import routes
 from flask import Blueprint, request, jsonify
 from controllers import peer_controller as peer
 
-# peer_route = routes.get_main_route()
 peer_route = Blueprint('peer_route', __name__)
 
-@peer_route.route('/my_info', methods=['GET'])
+@peer_route.route('/peer/my_info', methods=['GET'])
 def get_my_peer_info():
     ip, port = peer.get_peer_info()
     return f"Đã nhận yêu cầu từ IP: {ip}, Port: {port}"

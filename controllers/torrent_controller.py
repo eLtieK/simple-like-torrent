@@ -1,5 +1,6 @@
-# import bencodepy
-# from urllib.parse import urlparse, parse_qs
+import bencodepy
+import hashlib
+from urllib.parse import urlencode
 
 # # Function to parse a magnet URI
 # # "magnet:?xt=urn:btih:1234567890abcdef1234567890abcdef12345678&dn=examplefile.txt"
@@ -16,26 +17,48 @@
     
 #     return info_hash, display_name
 
-# # Function to create a .torrent file (Metainfo)
-# def create_torrent_file(info_hash, file_name, output_file):
-#     # Sample torrent metadata (in Bencode format)
-#     torrent_data = {
-#         "info": {
-#             "piece length": 512000,  # Example piece length (512KB)
-#             "pieces": b"abcd1234efgh5678abcd1234efgh5678",  # Placeholder piece hashes (20-byte SHA-1 hashes)
-#             "name": file_name.encode(),  # File name
-#             "length": 1024000  # Example file size (1MB)
-#         }
-#     }
+def create_info_hash(file_name, file_length, piece_length, pieces):
+    info = {
+        "name": file_name,
+        "length": file_length,
+        "piece length": piece_length,
+        "pieces": pieces
+    }
+    bencoded_info = bencodepy.encode(info)
+    info_hash = hashlib.sha1(bencoded_info).hexdigest()
+    return info_hash
+
+def create_magnet_link(info_hash, file_name):
+    params = {
+        "xt": f"urn:btih:{info_hash}",
+        "dn": file_name
+    }
+    return f"magnet:?{urlencode(params)}"
+
+# Function to create a .torrent file (Metainfo)
+def create_torrent_file(info_hash, file_name, file_length, output_file):
+    # Sample torrent metadata (in Bencode format)
+
+    piece_length = 512000  # Example piece length (512KB)
+    pieces = b"abcd1234efgh5678abcd1234efgh5678"  # Placeholder piece hashes (20-byte SHA-1 hashes)
+
+    torrent_data = {
+        "info": {
+            "piece length": piece_length,  # Example piece length (512KB)
+            "pieces": pieces,  
+            "name": file_name.encode(),  # File name
+            "length": file_length  # File length in bytes
+        }
+    }
+
+    # Bencode the data
+    encoded_data = bencodepy.encode(torrent_data)
     
-#     # Bencode the data
-#     encoded_data = bencodepy.encode(torrent_data)
+    # Write the encoded data to a .torrent file
+    with open(output_file, "wb") as f:
+        f.write(encoded_data)
     
-#     # Write the encoded data to a .torrent file
-#     with open(output_file, "wb") as f:
-#         f.write(encoded_data)
-    
-#     print(f"Torrent file '{output_file}' created successfully!")
+    print(f"Torrent file '{output_file}' created successfully!")
 
 # def read_torrent_file(output_file):
 #     # Đọc file .torrent

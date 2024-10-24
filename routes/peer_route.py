@@ -19,9 +19,16 @@ def peer_sign_up():
     name = data['name']
     password = data['password']
 
-    id = peer.sign_up(name, password)
+    ip, port = peer.sign_up(name, password)
 
-    return jsonify({"message": "Peer signed up successfully", "peer_id": id}), 201
+    if ip is None and port is None:
+        return jsonify({"error": "Name already exists"}), 400
+    
+    return jsonify({
+        "message": "Peer signed up successfully",
+        "ip_address": ip,
+        "port": port
+    }), 201
 
 @peer_route.route('/peer/login', methods=['POST'])
 def peer_login():
@@ -34,11 +41,15 @@ def peer_login():
     name = data['name']
     password = data['password']
 
-    valid, id = peer.login(name, password)
+    valid, ip, port = peer.login(name, password)
 
     if valid:
          # Nếu peer tồn tại, trả về thông tin
-        return jsonify({"message": "Peer found!", "peer": {"id": id}}), 200
+        return jsonify({
+            "message": "Peer found",
+            "ip_address": ip,
+            "port": port
+        }), 201
     else:
         # Nếu không tìm thấy peer
         return jsonify({"message": "Peer not found!"}), 404

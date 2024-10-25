@@ -10,4 +10,11 @@ def get_db():
 
 def close_connection():
     # Đóng kết nối MongoDB
-    db.close()
+    client.close()
+
+    # Kiểm tra kết nối đến MongoDB
+    try:
+        client.admin.command('ping')
+        print("Kết nối đến MongoDB thành công!")
+    except Exception as e:
+        print(f"Không thể kết nối đến MongoDB: {e}")

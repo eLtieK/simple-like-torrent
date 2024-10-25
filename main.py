@@ -7,7 +7,7 @@ from routes import routes
 if __name__ == "__main__":
     # Load các biến môi trường từ file .env
     load_dotenv()
-    my_host = os.getenv('HOST')
-    my_port = os.getenv('')
+    host = os.getenv('HOST')
+    port = os.getenv('PORT')
 
-    system.start_tracker(routes.get_all_routes(), my_host, my_port)
+    system.start_server(routes.get_all_routes(), host, port)

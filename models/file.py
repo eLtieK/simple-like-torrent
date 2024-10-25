@@ -1,5 +1,4 @@
-class File:
-    def __init__(self, name, size, pieces):
-        self.name = name
-        self.size = size
-        self.pieces = pieces
+from models import init_model as model
+
+def file_collection():
+    return model.init_collection("files")

@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, make_response
 from controllers import peer_controller as peer
 
 peer_route = Blueprint('peer_route', __name__)
@@ -41,15 +41,28 @@ def peer_login():
     name = data['name']
     password = data['password']
 
-    valid, ip, port = peer.login(name, password)
+    valid, id, ip, port = peer.login(name, password)
 
     if valid:
          # Nếu peer tồn tại, trả về thông tin
-        return jsonify({
+        response = make_response(
+        jsonify({ 
             "message": "Peer found",
+            "peer_id": id,
             "ip_address": ip,
             "port": port
-        }), 201
+        }), 201)
+        response.set_cookie('peer_id', id, httponly=True)
+        return response
     else:
         # Nếu không tìm thấy peer
         return jsonify({"message": "Peer not found!"}), 404
+    
+@peer_route.route('/peer/protected', methods=['GET'])
+def protected():
+    peer_id = request.cookies.get('peer_id')
+
+    if not peer_id:
+        return jsonify({"error": "Peer ID is missing!"}), 403
+
+    return jsonify({"message": "Protected route accessed!", "peer_id": peer_id}), 200

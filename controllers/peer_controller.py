@@ -45,20 +45,26 @@ def sign_up(name, password):
 def login(name, password):
     collection = peer.peer_collection()
     ip, port = get_peer_info()
-    data = collection.update_one(
+    # tim user
+    user = collection.find_one(
         {
             "name": name,
             "password": password
-        },
-        {
-            "$set": {
-                "ip_address": ip, # ip, port khi đăng nhập là mới 
-                "port": port
-            }
-        })
+        }
+    )
 
-    if data.modified_count > 0:
-        return True, data['ip_address'], data['port']
-    else:   
-        return False, "", ""
+    if user:
+        # Cập nhật thông tin ip và port cho người dùng
+        data = collection.update_one(
+            {"_id": user["_id"]},
+            {
+                "$set": {
+                    "ip_address": ip, # ip, port khi đăng nhập là mới 
+                    "port": port
+                }
+            })
+        if data.modified_count > 0:
+            return True, str(user["_id"]), ip, port
+    
+    return False, "", "", ""
     

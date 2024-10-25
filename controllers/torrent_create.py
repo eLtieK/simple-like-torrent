@@ -1,29 +1,29 @@
 import bencodepy
-from urllib.parse import urlparse, parse_qs
 import hashlib
+from models import torrents
 
 # Chia file thành các piece
 def generate_pieces(file_path, piece_length):
     pieces = []
+    # Sử dụng stream của FileStorage để đọc nội dung
+    while True:
+        # Đọc một đoạn với độ dài = piece_length
+        piece = file_path.read(piece_length)
+        if not piece:
+            break
+        # Tạo SHA-1 hash cho piece
+        piece_hash = hashlib.sha1(piece).digest()
+        pieces.append(piece_hash)
 
-    # Mở file dưới dạng binary (dạng byte)
-    with open(file_path, "rb") as f:
-        while True:
-            # Đọc một đoạn với độ dài = piece_length
-            piece = f.read(piece_length)
-            if not piece:
-                break
-            # Tạo SHA-1 hash cho piece
-            piece_hash = hashlib.sha1(piece).digest()
-            pieces.append(piece_hash)
-
+    # Nếu cần, có thể quay lại đầu file (nếu file_path là một file thật)
+    file_path.seek(0)
     # Nối tất cả các hash lại thành một chuỗi duy nhất
     return b''.join(pieces)
 
 # Cấu trúc info chứa thông tin về file
 def generate_info_hash(file_name, piece_length, pieces, file_length):
     info = {
-        "name": file_name.encode(),
+        "name": file_name,
         "piece length": piece_length,
         "pieces": pieces,
         "length": file_length  # Nếu chỉ có một file
@@ -64,17 +64,5 @@ def create_torrent_file(file_name, piece_length, pieces, file_length, output_fil
     
     print(f"Torrent file '{output_file}' created successfully!")
 
-def parse_magnet_uri(magnet_link):
-    # Parse the magnet link
-    parsed = urlparse(magnet_link)
-    params = parse_qs(parsed.query)
-    
-    # Extract info hash
-    info_hash = params.get('xt')[0].split(":")[-1]
-    
-    # Extract display name (optional)
-    display_name = params.get('dn', ['Unknown'])[0]
-    
-    return info_hash, display_name
 
 

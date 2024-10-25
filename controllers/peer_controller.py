@@ -32,9 +32,7 @@ def sign_up(name, password):
         "password": password,
         "ip_address": ip,
         "port": port,
-        "shared_files": [],
-        "downloaded_count": 0,
-        "uploaded_count": 0
+        "piece_info": [],
     }
 
      # Thêm người dùng vào collection

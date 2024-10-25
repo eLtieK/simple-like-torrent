@@ -5,6 +5,9 @@ from models import torrents
 # Chia file thành các piece
 def generate_pieces(file_path, piece_length):
     pieces = []
+    pieces_arr = []
+    pieces_idx = []
+    i = 1
     # Sử dụng stream của FileStorage để đọc nội dung
     while True:
         # Đọc một đoạn với độ dài = piece_length
@@ -14,11 +17,14 @@ def generate_pieces(file_path, piece_length):
         # Tạo SHA-1 hash cho piece
         piece_hash = hashlib.sha1(piece).digest()
         pieces.append(piece_hash)
+        pieces_arr.append((piece,i))
+        pieces_idx.append(i)
+        i = i + 1
 
     # Nếu cần, có thể quay lại đầu file (nếu file_path là một file thật)
     file_path.seek(0)
     # Nối tất cả các hash lại thành một chuỗi duy nhất
-    return b''.join(pieces)
+    return b''.join(pieces), pieces_arr, pieces_idx
 
 # Cấu trúc info chứa thông tin về file
 def generate_info_hash(file_name, piece_length, pieces, file_length):
@@ -39,9 +45,9 @@ def generate_info_hash(file_name, piece_length, pieces, file_length):
 
 # Function to parse a magnet URI
 # "magnet:?xt=urn:btih:1234567890abcdef1234567890abcdef12345678&dn=examplefile.txt"
-def create_magnet_link(info_hash, file_name):
-    base_url = "magnet:?xt=urn:btih:"
-    magnet_link = f"{base_url}{info_hash}&dn={file_name}"
+def create_magnet_link(info_hash):
+    # Tạo magnet link chỉ với info_hash
+    magnet_link = f"magnet:?xt=urn:btih:{info_hash}"
     return magnet_link
 
 def create_torrent_file(file_name, piece_length, pieces, file_length, output_file):

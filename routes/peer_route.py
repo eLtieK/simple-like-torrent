@@ -1,12 +1,9 @@
 from flask import Blueprint, request, jsonify, make_response
 from controllers import peer_controller as peer
+import threading
+import socket
 
 peer_route = Blueprint('peer_route', __name__)
-
-@peer_route.route('/peer/my_info', methods=['GET'])
-def get_my_peer_info():
-    ip, port = peer.get_peer_info()
-    return f"Đã nhận yêu cầu từ IP: {ip}, Port: {port}"
 
 @peer_route.route('/peer/sign_up', methods=['POST'])
 def peer_sign_up():
@@ -66,3 +63,15 @@ def protected():
         return jsonify({"error": "Peer ID is missing!"}), 403
 
     return jsonify({"message": "Protected route accessed!", "peer_id": peer_id}), 200
+
+@peer_route.route('/peer/start_peer', methods=['POST'])
+def start_peer():
+    ip = request.json['ip_address']
+    port = request.json['port']
+    peer_id = peer.get_peer_info(ip, port)
+    if not peer_id:
+        return jsonify({"error": "Bạn cần phải đăng nhập trước khi Upload"}), 401
+
+    thread = threading.Thread(target=peer.run_peer_server, args=(str(ip),int(port),str(peer_id)))
+    thread.start()
+    return jsonify({"status": "Peer server started on port {}".format(port)}), 200

@@ -12,7 +12,6 @@ def get_all_peer_info():
             "name": p["name"],  
             "ip_address": p["ip_address"],
             "port": p["port"],
-            "piece_info": p["piece_info"]
         }
         peer_list.append(data)
 
@@ -28,16 +27,7 @@ def get_peer(name):
             "name": peer_data['name'],
             "ip_address": peer_data['ip_address'],
             "port": peer_data['port'],
-            "piece_info": []
         }
-
-        # Duyệt qua từng phần tử trong piece_info
-        for piece in peer_data['piece_info']:
-            piece_info = {
-                "metainfo_id": str(piece['metainfo_id']),  # Chuyển ObjectId thành chuỗi
-                "index": piece['index']
-            }
-            data["piece_info"].append(piece_info)
 
     return data
 

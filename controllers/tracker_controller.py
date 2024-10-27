@@ -1,5 +1,5 @@
 from models import peer, file, torrents
-from controllers import torrent_controller, torrent_create
+from controllers import torrent_create, torrent_controller, peer_controller
 from bson import ObjectId
 import bencodepy
 import hashlib
@@ -41,6 +41,27 @@ def get_peer(name):
 
     return data
 
+def add_peer_to_file(torrent, peer_id, pieces_idx):
+    metainfo_id = str(torrent["_id"])
+    collection = file.file_collection()
+
+    file_data = collection.find_one({
+        "metainfo_id": ObjectId(metainfo_id)
+    })
+
+    if file_data:
+        # Thêm peer mới vào mảng `peers_info`
+        collection.update_one(
+            {"metainfo_id": ObjectId(metainfo_id)},
+            {"$push": {
+                "peers_info": {"peer_id": peer_id, 
+                               "pieces": pieces_idx}
+            }}
+        )
+        print("Peer added successfully.")
+    else:
+        print("File with the given metainfo_id not found.")
+
 def upload_file(file_path, peer_id):
     try:
         pieces, pieces_arr, pieces_idx = torrent_create.generate_pieces(file_path, 512000)
@@ -51,6 +72,12 @@ def upload_file(file_path, peer_id):
         file_path.seek(0, 0) # go back to the beginning of the file
 
         output_file = f"{file_path.filename}.torrent"
+
+        # optional
+        info_hash = torrent_create.generate_info_hash(file_path.filename, 512000, pieces, file_length)
+        magnet_link = torrent_create.create_magnet_link(info_hash)
+        torrent_create.create_encode_magent_link_file(magnet_link)
+
         torrent_create.create_torrent_file(file_path.filename, 512000, pieces, file_length, output_file)
         metainfo_id = add_torrent_to_db(output_file)
 
@@ -126,4 +153,42 @@ def add_torrent_to_db(output_file):
     print(f"Torrent '{torrent_info['info']['name']}' added to database successfully!")
     return result.inserted_id
 
-    
+def set_all_peer_inactive():
+    collection = peer.peer_collection()
+    result = collection.update_many(
+        {},
+        {"$set": 
+            {"status": "inactive"}
+        }
+    )
+
+def set_peer_inactive(peer_id):
+    collection = peer.peer_collection()
+
+    result = collection.update_one(
+        {"_id": ObjectId(peer_id)},
+        {"$set": {
+            "status": "inactive"
+        }}
+    )
+    return result
+
+def get_peer_from_file(magnet_link):
+    torrent_data = torrent_controller.get_torrent(magnet_link)
+    peer_list = torrent_controller.get_peer_list(torrent_data)
+    return peer_list
+
+def get_new_piece(magnet_link, peer_id):
+    torrent_data = torrent_controller.get_torrent(magnet_link)
+    peer_list = torrent_controller.get_peer_list(torrent_data)
+    pieces_index = torrent_controller.get_pieces_idx(torrent_data)
+    available_pieces = torrent_controller.get_available_pieces(peer_id, torrent_data)
+    add_peer_to_file(torrent_data, peer_id, pieces_index)
+
+    pieces = peer_controller.request_pieces_from_peers(peer_list, pieces_index, torrent_data, available_pieces)
+    pieces_arr = []
+    for i in range(len(pieces)):
+        pieces_arr.append((pieces[i], i))
+
+    update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
+    return pieces

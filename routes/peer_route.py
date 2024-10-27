@@ -5,14 +5,6 @@ import socket
 
 peer_route = Blueprint('peer_route', __name__)
 
-@peer_route.route('/peer/my_info', methods=['GET'])
-def get_my_peer_info():
-    ip, port = peer.get_peer_info()
-    return jsonify({
-        "ip_address": ip,
-        "port": port
-    })
-
 @peer_route.route('/peer/sign_up', methods=['POST'])
 def peer_sign_up():
     # Lấy dữ liệu từ request JSON
@@ -74,54 +66,12 @@ def protected():
 
 @peer_route.route('/peer/start_peer', methods=['POST'])
 def start_peer():
-    peer_id = request.cookies.get('peer_id')
-    if not peer_id:
-        return jsonify({"error": "Bạn cần phải đăng nhập trước khi Upload"}), 401
-    
     ip = request.json['ip_address']
     port = request.json['port']
-    thread = threading.Thread(target=run_peer_server, args=(str(ip),int(port),))
+    peer_id = peer.get_peer_info(ip, port)
+    if not peer_id:
+        return jsonify({"error": "Bạn cần phải đăng nhập trước khi Upload"}), 401
+
+    thread = threading.Thread(target=peer.run_peer_server, args=(str(ip),int(port),str(peer_id)))
     thread.start()
     return jsonify({"status": "Peer server started on port {}".format(port)}), 200
-
-def run_peer_server(ip, port):
-    peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    peer_socket.bind((ip, port))
-    peer_socket.listen(5)
-    
-    while True:
-        client_socket, addr = peer_socket.accept()
-        request = client_socket.recv(1024).decode()
-        if request.startswith("REQUEST_PIECE"):
-            piece_data = "This is a piece of the file."  # Giả lập dữ liệu
-            client_socket.send(piece_data.encode())
-        client_socket.close()
-
-@peer_route.route('/peer/connect', methods=['POST'])
-def connect_to_peer():
-    peer_id = request.cookies.get('peer_id')
-    if not peer_id:
-        return jsonify({"error": "Bạn cần phải đăng nhập trước khi kết nối tới peer"}), 401
-
-    peer_ip = request.json['ip_address']
-    peer_port = request.json['port']
-    
-    try:
-        # Kết nối đến peer server
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            client_socket.connect((peer_ip, peer_port))
-            # Gửi yêu cầu lấy piece
-            request_message = "REQUEST_PIECE"
-            client_socket.send(request_message.encode())
-            
-            # Nhận dữ liệu piece từ peer
-            piece_data = client_socket.recv(1024).decode()
-            print(f"Received piece data: {piece_data}")
-            
-            # Xử lý hoặc lưu trữ dữ liệu nhận được ở đây
-            return jsonify({"status": "Received piece data", "data": piece_data}), 200
-
-    except ConnectionRefusedError:
-        return jsonify({"error": "Không thể kết nối đến peer, vui lòng kiểm tra địa chỉ IP và port."}), 404
-    except Exception as e:
-        return jsonify({"error": f"Đã xảy ra lỗi: {str(e)}"}), 500

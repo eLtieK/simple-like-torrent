@@ -1,13 +1,13 @@
 import bencodepy
 import hashlib
-from models import torrents
+import urllib.parse
 
 # Chia file thành các piece
 def generate_pieces(file_path, piece_length):
     pieces = []
     pieces_arr = []
     pieces_idx = []
-    i = 1
+    i = 0
     # Sử dụng stream của FileStorage để đọc nội dung
     while True:
         # Đọc một đoạn với độ dài = piece_length
@@ -49,6 +49,16 @@ def create_magnet_link(info_hash):
     # Tạo magnet link chỉ với info_hash
     magnet_link = f"magnet:?xt=urn:btih:{info_hash}"
     return magnet_link
+
+def create_encode_magent_link_file(magnet_link):
+    encoded_magnet = urllib.parse.quote(magnet_link)
+    file_path = f"magnet_link.txt" 
+    try:
+        with open(file_path, "w") as file:
+            file.write(encoded_magnet)
+        print(f"Magnet link saved to {file_path}")
+    except Exception as e:
+        print(f"Error saving magnet link to file: {e}")
 
 def create_torrent_file(file_name, piece_length, pieces, file_length, output_file):
     # Torrent metadata for a single file

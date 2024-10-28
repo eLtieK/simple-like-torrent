@@ -28,13 +28,13 @@ def get_torrent(magnet_link):
     return torrent_data
 
 def get_pieces_idx(torrent):
-    decoded_bytes  = torrent["info"]["pieces"]
+    length = torrent["info"]["length"]
     piece_length = torrent["info"]["piece length"]
     # Tính số lượng piece
-    num_pieces = len(decoded_bytes) // piece_length
+    num_pieces = length // piece_length
     
     # Nếu còn dữ liệu dư sau khi chia, tăng số lượng piece lên 1
-    if len(decoded_bytes) % piece_length > 0:
+    if length % piece_length > 0:
         num_pieces += 1
     # Tạo mảng các index
     return list(range(num_pieces))
@@ -116,3 +116,11 @@ def verify_piece(piece_data, pieces_base64, piece_index):
     else:
         print(f"Piece {piece_index} không hợp lệ.")
         return False
+    
+def combine_pieces(pieces, output_file):
+    # Mở tệp đầu ra ở chế độ ghi nhị phân
+    with open(output_file, 'wb') as outfile:
+        for piece in pieces:
+            print(len(piece))
+            # Ghi từng phần dữ liệu vào tệp đầu ra
+            outfile.write(piece)

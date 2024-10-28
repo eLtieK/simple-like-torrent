@@ -12,7 +12,6 @@ def get_all_peer_info():
             "name": p["name"],  
             "ip_address": p["ip_address"],
             "port": p["port"],
-            "piece_info": p["piece_info"]
         }
         peer_list.append(data)
 
@@ -28,16 +27,7 @@ def get_peer(name):
             "name": peer_data['name'],
             "ip_address": peer_data['ip_address'],
             "port": peer_data['port'],
-            "piece_info": []
         }
-
-        # Duyệt qua từng phần tử trong piece_info
-        for piece in peer_data['piece_info']:
-            piece_info = {
-                "metainfo_id": str(piece['metainfo_id']),  # Chuyển ObjectId thành chuỗi
-                "index": piece['index']
-            }
-            data["piece_info"].append(piece_info)
 
     return data
 
@@ -120,7 +110,7 @@ def update_peer_shared_files(peer_id, metainfo_id, pieces_arr):
     collection.update_one(
         {"_id": ObjectId(peer_id)}, 
         {
-            "$addToSet": {"piece_info": data}, # Thêm file_name vào mảng shared_files
+            "$addToSet": {"piece_info": piece_data}, # Thêm file_name vào mảng shared_files
         }
     )
 
@@ -187,8 +177,10 @@ def get_new_piece(magnet_link, peer_id):
 
     pieces = peer_controller.request_pieces_from_peers(peer_list, pieces_index, torrent_data, available_pieces)
     pieces_arr = []
+
     for i in range(len(pieces)):
         pieces_arr.append((pieces[i], i))
 
     update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
-    return pieces
+    output_file = f"{torrent_data["info"]["name"]}"
+    return pieces, output_file

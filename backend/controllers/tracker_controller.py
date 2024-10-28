@@ -110,7 +110,7 @@ def update_peer_shared_files(peer_id, metainfo_id, pieces_arr):
     collection.update_one(
         {"_id": ObjectId(peer_id)}, 
         {
-            "$addToSet": {"piece_info": data}, # Thêm file_name vào mảng shared_files
+            "$addToSet": {"piece_info": piece_data}, # Thêm file_name vào mảng shared_files
         }
     )
 
@@ -177,8 +177,10 @@ def get_new_piece(magnet_link, peer_id):
 
     pieces = peer_controller.request_pieces_from_peers(peer_list, pieces_index, torrent_data, available_pieces)
     pieces_arr = []
+
     for i in range(len(pieces)):
         pieces_arr.append((pieces[i], i))
 
     update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
-    return pieces
+    output_file = f"{torrent_data["info"]["name"]}"
+    return pieces, output_file

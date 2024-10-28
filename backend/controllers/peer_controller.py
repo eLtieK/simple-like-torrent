@@ -98,14 +98,21 @@ def request_piece(peer_id, piece_index, pieces, requested_pieces, queue_lock, me
             client_socket.send(request_message.encode())
             
             # Nhận dữ liệu piece từ peer
-            piece_data = client_socket.recv(1024)
-            if piece_data == "PIECE_NOT_FOUND":
+            data = b''
+            while len(data) < 512000:
+                piece_data = client_socket.recv(4096)  # Nhận dữ liệu tối đa 4096 bytes mỗi lần
+                if not piece_data:  # Kiểm tra nếu không còn dữ liệu
+                    break
+                data += piece_data  # Nối dữ liệu vào biến data
+
+
+            if data == "PIECE_NOT_FOUND":
                 print(f"Piece {piece_index} not found on peer {peer_ip}:{peer_port}")
             else:
                 print(f"Received piece data from {peer_ip}:{peer_port} for piece {piece_index}")
                 # Lưu piece vào danh sách, cập nhật trạng thái
                 with queue_lock:
-                    pieces[piece_index] = piece_data
+                    pieces[piece_index] = data
                     requested_pieces.remove(piece_index)
 
     except ConnectionRefusedError:
@@ -166,7 +173,6 @@ def run_peer_server(ip, port, peer_id):
             try:
                 _, params = request.split("|")
                 piece_index, metainfo_id = eval(params)  # Lấy piece_index từ params
-
                 # Gửi dữ liệu của piece về cho client
                 send_piece_data(piece_index, client_socket, peer_id, metainfo_id)
             except Exception as e:
@@ -184,17 +190,23 @@ def send_piece_data(piece_index, client_socket, peer_id, metainfo_id):
     if peer_data and "piece_info" in peer_data:
         # Truy xuất mảng piece_info
         piece_info = peer_data["piece_info"]
-
         # print(piece_info, piece_index, metainfo_id)
         # Sử dụng vòng lặp for để tìm piece có index bằng piece_index
         piece_data = None
         for piece in piece_info:
-            if piece["index"] == piece_index and piece["metainfo_id"] == ObjectId(metainfo_id):
-                piece_data = piece["piece"]
-                break
+            for p in piece:
+                if p["index"] == piece_index and p["metainfo_id"] == ObjectId(metainfo_id):
+                    piece_data = p["piece"]
+                    break
             
         if piece_data:
-            client_socket.send(piece_data)
+            total_sent = 0  # Số bytes đã gửi
+            piece_length = len(piece_data)
+            while total_sent < piece_length:
+                sent = client_socket.send(piece_data[total_sent:])  # Gửi dữ liệu từ vị trí hiện tại
+                if sent == 0:
+                    raise RuntimeError("Socket connection broken")
+                total_sent += sent  # Cập nhật số bytes đã gửi
         else:
             print("Không tìm thấy piece với piece_index yêu cầu.")
     else:

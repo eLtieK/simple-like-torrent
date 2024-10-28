@@ -73,7 +73,7 @@ def download_data(encoded_magnet):
     if not peer_id:
         return jsonify({"error": "Bạn cần phải đăng nhập trước khi kết nối tới peer"}), 401
 
-    pieces = tracker.get_new_piece(magnet_link, peer_id)
+    pieces, output_file = tracker.get_new_piece(magnet_link, peer_id)
     
     # Check the result of the download
     if pieces is None:
@@ -82,6 +82,7 @@ def download_data(encoded_magnet):
     if not pieces:
         return jsonify({"error": "No data was downloaded"}), 404
     else:
+        torrent.combine_pieces(pieces, output_file)
         return jsonify({"message": "File downloaded succesfull"}), 200
     
     

@@ -1,7 +1,7 @@
 import bencodepy
 import hashlib
 import urllib.parse
-
+from controllers import torrent_controller
 # Chia file thành các piece
 def generate_pieces(file_path, piece_length):
     pieces = []
@@ -23,6 +23,7 @@ def generate_pieces(file_path, piece_length):
 
     # Nếu cần, có thể quay lại đầu file (nếu file_path là một file thật)
     file_path.seek(0)
+
     # Nối tất cả các hash lại thành một chuỗi duy nhất
     return b''.join(pieces), pieces_arr, pieces_idx
 

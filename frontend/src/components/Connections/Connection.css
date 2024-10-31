@@ -1,0 +1,43 @@
+.connection-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.connection-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  font-size: 1.2em;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.connection-button:hover {
+  background-color: #45a049;
+}
+
+.connection-button:active {
+  transform: scale(0.98);
+}
+
+.connection-status {
+  margin-top: 15px;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #333;
+  opacity: 1;
+
+}
+
+/* Animation cho trạng thái */
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

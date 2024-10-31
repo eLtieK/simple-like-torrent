@@ -1,0 +1,60 @@
+.home-container {
+  text-align: center;
+  margin-top: 20px;
+  transition: transform 0.5s ease;
+}
+
+.home-container.connected {
+  transform: translateX(-50%);
+}
+
+.welcome-message {
+  font-size: 2em;
+  margin-bottom: 20px;
+}
+
+.info-card {
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.info-item {
+  font-size: 1.2em;
+  margin: 5px 0;
+}
+
+.info-value {
+  font-weight: bold;
+}
+
+.loading-message, .connected-message {
+  font-size: 1.5em;
+  animation: fadeInOut 1.5s infinite;
+}
+
+/* Định nghĩa animation fadeInOut */
+@keyframes fadeInOut {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Container cho phần upload và download */
+.upload-download-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50%; /* Chiếm nửa màn hình */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}

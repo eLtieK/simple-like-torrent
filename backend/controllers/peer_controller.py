@@ -7,6 +7,9 @@ from queue import Queue
 import base64
 
 
+
+
+
 def get_ip_and_port():
     """
     Hàm lấy thông tin IP và Port của client kết nối.
@@ -214,3 +217,18 @@ def send_piece_data(piece_index, client_socket, peer_id, metainfo_id):
         client_socket.send(b"PIECE_NOT_FOUND")
         print(f"Piece {piece_index} not found.")
 
+def get_peer_by_id(peer_id):
+    collection = peer.peer_collection()
+    
+    try:
+        peer_data = collection.find_one({"_id": ObjectId(peer_id)})
+        if peer_data:
+            return {
+                "ip_address": peer_data["ip_address"],
+                "port": peer_data["port"]
+            }
+        else:
+            return None
+    except Exception as e:
+        print(f"Error retrieving peer info: {str(e)}")
+        return None

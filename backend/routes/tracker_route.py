@@ -82,5 +82,3 @@ def download_data(encoded_magnet):
     else:
         torrent.combine_pieces(pieces, output_file)
         return jsonify({"message": "File downloaded succesfull"}), 200
-    
-    

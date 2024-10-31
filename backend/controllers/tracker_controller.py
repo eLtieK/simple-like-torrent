@@ -12,6 +12,7 @@ def get_all_peer_info():
             "name": p["name"],  
             "ip_address": p["ip_address"],
             "port": p["port"],
+            "status": p["status"]
         }
         peer_list.append(data)
 
@@ -27,6 +28,7 @@ def get_peer(name):
             "name": peer_data['name'],
             "ip_address": peer_data['ip_address'],
             "port": peer_data['port'],
+            "status": peer_data["status"]
         }
 
     return data

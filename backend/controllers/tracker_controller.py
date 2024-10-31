@@ -4,6 +4,26 @@ from bson import ObjectId
 import bencodepy
 import hashlib
 
+def get_all_file_info():
+    file_collection = file.file_collection()
+    torrent_collection = torrents.torrent_collection()
+    file_list = []
+    
+    for f in file_collection.find():
+        torrent_info = torrent_collection.find_one({
+            '_id': f['metainfo_id']
+        })
+
+        data = {
+            'file_name': f['file_name'],
+            'length': torrent_info['info']['length'],
+            'seeder': len(f['peers_info']),
+            'magnet_link': torrent_create.create_encode_magent_link(torrent_info['info_hash'])
+        }
+        file_list.append(data)
+
+    return file_list
+
 def get_all_peer_info():
     collection = peer.peer_collection()
     peer_list = []
@@ -44,7 +64,7 @@ def add_peer_to_file(torrent, peer_id, pieces_idx):
         collection.update_one(
             {"metainfo_id": ObjectId(metainfo_id)},
             {"$push": {
-                "peers_info": {"peer_id": peer_id, 
+                "peers_info": {"peer_id": ObjectId(peer_id), 
                                "pieces": pieces_idx}
             }}
         )
@@ -80,7 +100,7 @@ def upload_file(file_path, peer_id):
 
         # Thêm peer_id vào mảng peer_ids
         peer_info = {
-            "peer_id": peer_id,
+            "peer_id": ObjectId(peer_id),
             "pieces": pieces_idx
         }
         file_data["peers_info"].append(peer_info)
@@ -101,7 +121,7 @@ def update_peer_shared_files(peer_id, metainfo_id, pieces_arr):
 
     for piece_info in pieces_arr:
         data = {
-            "metainfo_id": metainfo_id,
+            "metainfo_id": ObjectId(metainfo_id),
             "index": piece_info[1],
             "piece": piece_info[0]
         }
@@ -173,14 +193,21 @@ def get_new_piece(magnet_link, peer_id):
     peer_list = torrent_controller.get_peer_list(torrent_data)
     pieces_index = torrent_controller.get_pieces_idx(torrent_data)
     available_pieces = torrent_controller.get_available_pieces(peer_id, torrent_data)
-    add_peer_to_file(torrent_data, peer_id, pieces_index)
+    
+    if not available_pieces:
+        add_peer_to_file(torrent_data, peer_id, pieces_index)
 
     pieces = peer_controller.request_pieces_from_peers(peer_list, pieces_index, torrent_data, available_pieces)
+
     pieces_arr = []
 
     for i in range(len(pieces)):
         pieces_arr.append((pieces[i], i))
 
-    update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
+    pieces = peer_controller.get_total_piece_available(pieces, peer_id, str(torrent_data["_id"]))
+    
+    if not available_pieces:
+        update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
+        
     output_file = f"{torrent_data['info']['name']}"
     return pieces, output_file

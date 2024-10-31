@@ -79,7 +79,8 @@ def get_peer_list(torrent):
     peer_list = []
     for p in peer_data:
         peer_info = peer_collection.find_one({
-            "_id": ObjectId(str(p["peer_id"]))
+            "_id": ObjectId(str(p["peer_id"])),
+            "status": "active"
         })
         peer_new_info = {
             "peer_id": str(peer_info["_id"]),
@@ -122,6 +123,5 @@ def combine_pieces(pieces, output_file):
     # Mở tệp đầu ra ở chế độ ghi nhị phân
     with open(output_file, 'wb') as outfile:
         for piece in pieces:
-            print(len(piece))
             # Ghi từng phần dữ liệu vào tệp đầu ra
             outfile.write(piece)

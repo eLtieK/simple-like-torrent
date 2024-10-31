@@ -51,6 +51,10 @@ def create_magnet_link(info_hash):
     magnet_link = f"magnet:?xt=urn:btih:{info_hash}"
     return magnet_link
 
+def create_encode_magent_link(info_hash):
+    magnet_link = create_magnet_link(info_hash)
+    return urllib.parse.quote(magnet_link)
+
 def create_encode_magent_link_file(magnet_link):
     encoded_magnet = urllib.parse.quote(magnet_link)
     file_path = f"magnet_link.txt" 

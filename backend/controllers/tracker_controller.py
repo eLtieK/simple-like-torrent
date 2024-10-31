@@ -4,6 +4,27 @@ from bson import ObjectId
 import bencodepy
 import hashlib
 
+
+def get_all_file_info():
+    file_collection = file.file_collection()
+    torrent_collection = torrents.torrent_collection()
+    file_list = []
+    
+    for f in file_collection.find():
+        torrent_info = torrent_collection.find_one({
+            '_id': f['metainfo_id']
+        })
+
+        data = {
+            'file_name': f['file_name'],
+            'length': torrent_info['info']['length'],
+            'seeder': len(f['peers_info']),
+            'magnet_link': torrent_create.create_encode_magent_link(torrent_info['info_hash'])
+        }
+        file_list.append(data)
+
+    return file_list
+
 def get_all_peer_info():
     collection = peer.peer_collection()
     peer_list = []
@@ -12,7 +33,6 @@ def get_all_peer_info():
             "name": p["name"],  
             "ip_address": p["ip_address"],
             "port": p["port"],
-            "status": p["status"]
         }
         peer_list.append(data)
 
@@ -28,7 +48,6 @@ def get_peer(name):
             "name": peer_data['name'],
             "ip_address": peer_data['ip_address'],
             "port": peer_data['port'],
-            "status": peer_data["status"]
         }
 
     return data
@@ -184,5 +203,5 @@ def get_new_piece(magnet_link, peer_id):
         pieces_arr.append((pieces[i], i))
 
     update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
-    output_file = f"{torrent_data["info"]["name"]}"
+    output_file = f"{torrent_data['info']['name']}"
     return pieces, output_file

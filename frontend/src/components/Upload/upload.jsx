@@ -2,9 +2,13 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './upload.css';
 
-
-
 axios.defaults.withCredentials = true;
+
+const getCookieValue = (name) => {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+};
+
 const Upload = ({ isConnected }) => {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
@@ -24,15 +28,22 @@ const Upload = ({ isConnected }) => {
       return;
     }
 
+    const peerId = getCookieValue("peer_id");
+    if (!peerId) {
+      setMessage("Bạn cần phải đăng nhập trước khi upload.");
+      return;
+    }
+
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('peer_id', peerId); 
 
     try {
       const response = await axios.post('http://127.0.0.1:5000/tracker/uploading', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        withCredentials: true, 
+        withCredentials: true,
       });
 
       setMessage(response.data.message || "File uploaded successfully.");

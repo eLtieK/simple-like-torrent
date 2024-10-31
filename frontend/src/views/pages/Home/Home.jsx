@@ -25,9 +25,6 @@ const Home = () => {
       {isConnected && (
         <>
           <p className="connected-message">Connected to P2P Network</p>
-          <p className="connection-status">
-            Connected successfully from IP: {ipAddress} on Port: {port}
-          </p>
           <Upload isConnected={isConnected} />
           <Download />
         </>

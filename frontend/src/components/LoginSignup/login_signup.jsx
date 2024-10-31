@@ -15,11 +15,11 @@ const LoginSignup = ({ setIsLoggedIn }) => {
   const handleSubmit = async () => {
     const url = action === "Login" ? "http://127.0.0.1:5000/peer/login" : "http://127.0.0.1:5000/peer/sign_up";
     try {
-      const response = await axios.post(url, { name, password }, { headers: { 'Content-Type': 'application/json' , withCredentials: true, } });
+      const response = await axios.post(url, { name, password }, { headers: { 'Content-Type': 'application/json' } });
       if (response.status === 201) {
         setMessage(response.data.message);
         if (action === "Login") {
-          document.cookie = `peer_id=${response.data.peer_id}; path=/`;
+         document.cookie = `peer_id=${response.data.peer_id}; path=/`;
           setIsLoggedIn(true);
           setTimeout(() => {
             navigate('/');

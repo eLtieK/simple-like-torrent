@@ -1,9 +1,15 @@
 from flask import Blueprint, request, jsonify
 from urllib.parse import unquote
-from controllers import tracker_controller as tracker, torrent_controller as torrent, torrent_create
+from controllers import tracker_controller as tracker, torrent_controller as torrent
 from flask_cors import CORS
 tracker_route = Blueprint('tracker_route', __name__)
 CORS(tracker_route, supports_credentials=True, origins=["http://localhost:3000"])
+
+@tracker_route.route('/tracker/all_file', methods=['GET'])
+def get_all_file_info():
+    file_list = tracker.get_all_file_info()
+    return jsonify(file_list), 200 
+
 @tracker_route.route('/tracker/all_peer', methods=['GET'])
 def get_all_peers():
     peer_list = tracker.get_all_peer_info()
@@ -82,10 +88,3 @@ def download_data(encoded_magnet):
     else:
         torrent.combine_pieces(pieces, output_file)
         return jsonify({"message": "File downloaded succesfull"}), 200
-    
-@tracker_route.route('/tracker/all_file', methods=['GET'])
-def get_all_file_info():
-    file_list = tracker.get_all_file_info()
-    return jsonify(file_list), 200 
-
-    

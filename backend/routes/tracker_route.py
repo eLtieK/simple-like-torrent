@@ -1,9 +1,9 @@
 from flask import Blueprint, request, jsonify
 from urllib.parse import unquote
 from controllers import tracker_controller as tracker, torrent_controller as torrent
-
+from flask_cors import CORS
 tracker_route = Blueprint('tracker_route', __name__)
-
+CORS(tracker_route, supports_credentials=True, origins=["http://localhost:3000"])
 @tracker_route.route('/tracker/all_peer', methods=['GET'])
 def get_all_peers():
     peer_list = tracker.get_all_peer_info()
@@ -19,21 +19,17 @@ def get_peer(name):
     
 @tracker_route.route('/tracker/uploading', methods=['POST'])
 def upload_data():
-    # Lấy dữ liệu từ request JSON
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
-    
-    file = request.files['file']
 
-    # Kiểm tra xem file có được chọn không
+    file = request.files['file']
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
-    
-    # Kiểm tra xem peer_id có tồn tại trong session hay không
-    peer_id = request.cookies.get("peer_id")
+
+    # Nhận peer_id từ formData
+    peer_id = request.form.get("peer_id")
     if peer_id is None:
         return jsonify({"error": "Bạn cần phải đăng nhập trước khi Upload"}), 401
-    print(peer_id)
 
     # Gọi hàm từ tracker_controller để xử lý dữ liệu tải lên
     result = tracker.upload_file(file, peer_id)
@@ -42,6 +38,7 @@ def upload_data():
         return jsonify({"message": "File uploaded successfully"}), 201
     else:
         return jsonify({"error": "Failed to upload file"}), 500
+
 
 '''    
 window.addEventListener("beforeunload", () => {

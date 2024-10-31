@@ -182,5 +182,5 @@ def get_new_piece(magnet_link, peer_id):
         pieces_arr.append((pieces[i], i))
 
     update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
-    output_file = f"{torrent_data["info"]["name"]}"
+    output_file = f"{torrent_data['info']['name']}"
     return pieces, output_file

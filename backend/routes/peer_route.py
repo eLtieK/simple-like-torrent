@@ -50,7 +50,7 @@ def peer_login():
             "port": port,
             "name": data,
         }), 201)
-        response.set_cookie('peer_id', id, httponly=True, samesite='None')
+        response.set_cookie('peer_id', id, httponly=True, samesite='None', secure=True)
 
         return response
     else:
@@ -82,7 +82,7 @@ def start_peer():
 @peer_route.route('/peer/info', methods=['GET'])
 def get_peer_info_by_id():
     # Lấy peer_id từ query parameters
-    peer_id = request.args.get('peer_id')
+    peer_id = request.cookies.get('peer_id')
 
     if not peer_id:
         return jsonify({"error": "Peer ID is required"}), 400

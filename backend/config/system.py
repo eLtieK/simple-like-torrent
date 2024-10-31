@@ -6,6 +6,7 @@ import signal
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins=["http://localhost:3000"])
+
 def start_server(routes, my_host, my_port):
     for route in routes:
         app.register_blueprint(route)

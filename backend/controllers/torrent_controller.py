@@ -57,9 +57,10 @@ def get_available_pieces(peer_id, torrent):
     piece_info = peer_info["piece_info"]
     # Kiểm tra xem peer có piece_info không
     for piece in piece_info:
-        # So sánh metainfo_id và lưu index nếu nó khớp
-        if str(piece["metainfo_id"]) == metainfo_id:
-            available_indices.append(piece["index"])
+        for p in piece:
+            # So sánh metainfo_id và lưu index nếu nó khớp
+            if str(p["metainfo_id"]) == metainfo_id:
+                available_indices.append(p["index"])
 
     return available_indices
 
@@ -78,7 +79,8 @@ def get_peer_list(torrent):
     peer_list = []
     for p in peer_data:
         peer_info = peer_collection.find_one({
-            "_id": ObjectId(str(p["peer_id"]))
+            "_id": ObjectId(str(p["peer_id"])),
+            "status": "active"
         })
         peer_new_info = {
             "peer_id": str(peer_info["_id"]),
@@ -121,6 +123,5 @@ def combine_pieces(pieces, output_file):
     # Mở tệp đầu ra ở chế độ ghi nhị phân
     with open(output_file, 'wb') as outfile:
         for piece in pieces:
-            print(len(piece))
             # Ghi từng phần dữ liệu vào tệp đầu ra
             outfile.write(piece)

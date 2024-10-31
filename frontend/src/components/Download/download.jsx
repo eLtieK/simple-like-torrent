@@ -13,10 +13,30 @@ const Download = () => {
     }
 
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/tracker/downloading/${encodeURIComponent(magnetLink)}`);
-      setMessage(response.data.message);
+      // Lấy peer_id từ cookie của trình duyệt
+      const peerId = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('peer_id='))
+        ?.split('=')[1];
+      if (!peerId) {
+        setMessage("Bạn cần phải đăng nhập trước khi kết nối tới peer.");
+        return;
+      }
+
+      // Gửi yêu cầu mà không cần xử lý phản hồi
+      await axios.post(
+        `http://127.0.0.1:5000/tracker/downloading/${magnetLink}`,
+        {}, 
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, 
+        }
+      );
+
     } catch (error) {
-      setMessage(error.response?.data?.error || "Failed to download file.");
+      setMessage("Failed to download file.");
     }
   };
 

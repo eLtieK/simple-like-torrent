@@ -6,10 +6,6 @@ import threading
 from queue import Queue
 import base64
 
-
-
-
-
 def get_ip_and_port():
     """
     Hàm lấy thông tin IP và Port của client kết nối.
@@ -126,9 +122,11 @@ def request_piece(peer_id, piece_index, pieces, requested_pieces, queue_lock, me
 def request_pieces_from_peers(peer_list, piece_indexes, torrent_data, available_pieces):
     # Kiểm tra nếu piece_indexes rỗng
     if not piece_indexes:
-        pieces = [None] # Hoặc khởi tạo như một danh sách với các phần tử None
-    else:
+        pieces = [None] * (max(available_pieces) + 1) # Hoặc khởi tạo như một danh sách với các phần tử None
+    elif not available_pieces:
         pieces = [None] * (max(piece_indexes) + 1)  # Danh sách lưu các pieces đã nhận
+    else: 
+        pieces = [None] * (max(max(available_pieces), max(piece_indexes)) + 1)
 
     requested_pieces = set()  # Set để lưu các pieces đang được yêu cầu
     queue_lock = threading.Lock()
@@ -232,3 +230,31 @@ def get_peer_by_id(peer_id):
     except Exception as e:
         print(f"Error retrieving peer info: {str(e)}")
         return None
+
+def get_available_piece(piece_index, peer_id, metainfo_id):
+    """Hàm này gửi dữ liệu của piece được yêu cầu về cho client."""
+    collection = peer.peer_collection()
+    peer_data = collection.find_one({
+        "_id": ObjectId(peer_id)
+    })
+
+    if peer_data and "piece_info" in peer_data:
+        # Truy xuất mảng piece_info
+        piece_info = peer_data["piece_info"]
+        # print(piece_info, piece_index, metainfo_id)
+        # Sử dụng vòng lặp for để tìm piece có index bằng piece_index
+        for piece in piece_info:
+            for p in piece:
+                if p["index"] == piece_index and p["metainfo_id"] == ObjectId(metainfo_id):
+                    return p["piece"]
+                
+    return None
+
+def get_total_piece_available(pieces, peer_id, metainfo_id):
+    for i in range(len(pieces)):
+        if(pieces[i] is None):
+            pieces[i] = get_available_piece(i, peer_id, metainfo_id)
+            if(pieces[i] is None):
+                print(f'Error getting piece: index {i}')
+
+    return pieces

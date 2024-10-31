@@ -57,9 +57,10 @@ def get_available_pieces(peer_id, torrent):
     piece_info = peer_info["piece_info"]
     # Kiểm tra xem peer có piece_info không
     for piece in piece_info:
-        # So sánh metainfo_id và lưu index nếu nó khớp
-        if str(piece["metainfo_id"]) == metainfo_id:
-            available_indices.append(piece["index"])
+        for p in piece:
+            # So sánh metainfo_id và lưu index nếu nó khớp
+            if str(p["metainfo_id"]) == metainfo_id:
+                available_indices.append(p["index"])
 
     return available_indices
 

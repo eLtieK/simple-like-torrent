@@ -58,6 +58,7 @@ const ListPeer = () => {
             <p><strong>Tên:</strong> {peer.name}</p>
             <p><strong>Địa chỉ IP:</strong> {peer.ip_address}</p>
             <p><strong>Cổng:</strong> {peer.port}</p>
+            <p><strong>Trạng thái:</strong> {peer.status}</p>
           </li>
         ))}
       </ul>

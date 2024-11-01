@@ -92,5 +92,9 @@ def download_data(encoded_magnet):
     if not pieces:
         return jsonify({"error": "No data was downloaded"}), 404
     else:
-        torrent.combine_pieces(pieces, output_file)
-        return jsonify({"message": "File downloaded succesfull"}), 200
+        # torrent.combine_pieces(pieces, output_file)
+        return jsonify({
+            "message": "File downloaded succesfull",
+            "pieces": pieces,
+            "file_name": output_file
+        }), 200

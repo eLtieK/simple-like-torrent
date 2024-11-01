@@ -4,6 +4,14 @@ from bson import ObjectId
 import bencodepy
 import hashlib
 
+def get_num_peer_active(peer_list):
+    num = 0
+    for peer in peer_list:
+        if peer["status"] == "active":
+            num += 1
+
+    return num
+
 def get_all_file_info():
     file_collection = file.file_collection()
     torrent_collection = torrents.torrent_collection()
@@ -14,10 +22,12 @@ def get_all_file_info():
             '_id': f['metainfo_id']
         })
 
+        seeder = get_num_peer_active(f['peer_info'])
+
         data = {
             'file_name': f['file_name'],
             'length': torrent_info['info']['length'],
-            'seeder': len(f['peers_info']),
+            'seeder': seeder,
             'magnet_link': torrent_create.create_encode_magent_link(torrent_info['info_hash'])
         }
         file_list.append(data)
@@ -32,6 +42,7 @@ def get_all_peer_info():
             "name": p["name"],  
             "ip_address": p["ip_address"],
             "port": p["port"],
+            "status": p["status"]
         }
         peer_list.append(data)
 
@@ -209,5 +220,5 @@ def get_new_piece(magnet_link, peer_id):
     if not available_pieces:
         update_peer_shared_files(peer_id, str(torrent_data["_id"]), pieces_arr)
         
-    output_file = f"{torrent_data['info']['name']}"
+    output_file = torrent_data['info']['name']
     return pieces, output_file

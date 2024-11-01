@@ -119,9 +119,15 @@ def verify_piece(piece_data, pieces_base64, piece_index):
         print(f"Piece {piece_index} không hợp lệ.")
         return False
     
-def combine_pieces(pieces, output_file):
-    # Mở tệp đầu ra ở chế độ ghi nhị phân
-    with open(output_file, 'wb') as outfile:
+import os
+
+def combine_pieces(pieces, output_file_name):
+    output_file_path = os.path.join("C:\\Downloads", output_file_name)
+
+    if not os.path.exists("C:\\Downloads"):
+        os.makedirs("C:\\Downloads")
+    with open(output_file_path, 'wb') as outfile:
         for piece in pieces:
-            # Ghi từng phần dữ liệu vào tệp đầu ra
             outfile.write(piece)
+
+    print(f"File downloaded successfully to {output_file_path}")

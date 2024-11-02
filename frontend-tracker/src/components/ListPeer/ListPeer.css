@@ -1,0 +1,150 @@
+/* ListPeer.css */
+
+.peer-list-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: Arial, sans-serif;
+  width: 45%;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+h2 {
+  text-align: center;
+  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+}
+
+.peer-list {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+}
+
+.peer-item {
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  margin: 10px 0;
+  padding: 15px;
+  transform: translateY(0);
+  transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  text-align: left;
+  animation: fadeInUp 0.5s forwards;
+}
+
+.peer-item:hover {
+  transform: translateY(-5px);
+  background-color: #e6f7ff;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.peer-item p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message {
+  color: #ff4d4d;
+  text-align: center;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.reload-button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  margin-bottom: 20px;
+}
+
+.reload-button:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+}
+
+.reload-button:active {
+  background-color: #1e7e34;
+}
+
+/* Pagination Styles */
+.pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  gap: 10px;
+}
+
+.pagination button {
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  border: none;
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.pagination button:hover {
+  background-color: #007bff;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.pagination button.active {
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  border: 1px solid #0056b3;
+}
+
+.pagination .nav-button {
+  background-color: #6c757d;
+  color: white;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  padding: 8px 14px;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.pagination .nav-button:hover {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}
+
+.pagination .nav-button:active {
+  background-color: #495057;
+}
+
+
+.button-and-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}

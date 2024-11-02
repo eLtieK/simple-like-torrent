@@ -2,6 +2,7 @@ import base64
 from models import torrents, file, peer
 from bson import ObjectId
 import hashlib
+import os
 
 def decode_magnet_link(magnet_link):
     # Kiểm tra xem magnet link có bắt đầu bằng 'magnet:?xt=urn:btih:' không
@@ -82,6 +83,10 @@ def get_peer_list(torrent):
             "_id": ObjectId(str(p["peer_id"])),
             "status": "active"
         })
+
+        if peer_info is None:
+            continue
+
         peer_new_info = {
             "peer_id": str(peer_info["_id"]),
             "ip_address": peer_info["ip_address"],
@@ -91,41 +96,19 @@ def get_peer_list(torrent):
 
     return peer_list
 
-def get_piece_hash_from_torrent(torrent_data, piece_index):
-    # Truy cập trường pieces được mã hóa base64 trong torrent data
-    pieces_base64 = torrent_data['info']['pieces']['$binary']['base64']
-    
-    # Giải mã base64 thành dữ liệu nhị phân
-    pieces_binary = base64.b64decode(pieces_base64)
-    
-    # Mỗi hash SHA-1 có độ dài 20 byte
-    piece_length = 20  
-    start = piece_index * piece_length
-    end = start + piece_length
-    # Trả về hash của piece tương ứng
-    return pieces_binary[start:end]
+# Mã hóa danh sách các mảng byte thành Base64
+def encode_list_to_base64(byte_list):
+    return [base64.b64encode(piece).decode('utf-8') for piece in byte_list]
 
-def verify_piece(piece_data, pieces_base64, piece_index):
-    # Tính hash SHA-1 của piece tải về từ peer
-    piece_hash = hashlib.sha1(piece_data).digest()
-    # Lấy hash từ file torrent cho piece tương ứng
-    expected_hash = get_piece_hash_from_torrent(pieces_base64, piece_index)
-    
-    # So sánh hash
-    if piece_hash == expected_hash:
-        print(f"Piece {piece_index} hợp lệ.")
-        return True
-    else:
-        print(f"Piece {piece_index} không hợp lệ.")
-        return False
-    
-import os
+# Giải mã danh sách Base64 về các mảng byte
+def decode_list_from_base64(base64_list):
+    return [base64.b64decode(b64_str) for b64_str in base64_list]
 
 def combine_pieces(pieces, output_file_name):
-    output_file_path = os.path.join("C:\\Downloads", output_file_name)
-
+    pieces = decode_list_from_base64(pieces)
     if not os.path.exists("C:\\Downloads"):
         os.makedirs("C:\\Downloads")
+    output_file_path = os.path.join("C:\\Downloads", output_file_name)
     with open(output_file_path, 'wb') as outfile:
         for piece in pieces:
             outfile.write(piece)

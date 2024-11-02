@@ -8,7 +8,6 @@ CORS(tracker_route, supports_credentials=True, origins=["http://localhost:3000"]
 @tracker_route.route('/tracker/all_file', methods=['GET'])
 def get_all_file_info():
     file_list = tracker.get_all_file_info()
-    total_count = len(file_list)  # Calculate the total number of files
     return jsonify(file_list), 200 
 
 @tracker_route.route('/tracker/all_peer', methods=['GET'])

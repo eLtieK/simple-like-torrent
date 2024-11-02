@@ -13,7 +13,12 @@ def get_all_file_info():
 @tracker_route.route('/tracker/all_peer', methods=['GET'])
 def get_all_peers():
     peer_list = tracker.get_all_peer_info()
-    return jsonify(peer_list), 200 
+    total_count = len(peer_list)  # Calculate the total number of peers
+    return jsonify({
+        "peers": peer_list,
+        "total_count": total_count
+    }), 200
+
 
 @tracker_route.route('/tracker/peer/<name>', methods=['GET'])
 def get_peer(name):
@@ -86,5 +91,9 @@ def download_data(encoded_magnet):
     if not pieces:
         return jsonify({"error": "No data was downloaded"}), 404
     else:
-        torrent.combine_pieces(pieces, output_file)
-        return jsonify({"message": "File downloaded succesfull"}), 200
+        # torrent.combine_pieces(pieces, output_file)
+        return jsonify({
+            "message": "File downloaded succesfull",
+            "pieces": pieces,
+            "file_name": output_file
+        }), 200

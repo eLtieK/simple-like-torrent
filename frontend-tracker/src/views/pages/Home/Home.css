@@ -1,0 +1,13 @@
+.home-container {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-start; 
+  width: 100%;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.home-container h1 {
+  margin-bottom: 20px;
+  color: #333;
+}

@@ -35,14 +35,8 @@ const Download = () => {
 
       if (response.status === 200) {
         const { pieces, file_name } = response.data;
-
-        // Decode Base64 pieces into byte arrays
         const decodedPieces = pieces.map(piece => Uint8Array.from(atob(piece), c => c.charCodeAt(0)));
-        
-        // Create a Blob from the combined decoded pieces
         const combinedBlob = new Blob(decodedPieces);
-
-        // Create a download link
         const downloadUrl = window.URL.createObjectURL(combinedBlob);
         const link = document.createElement('a');
         link.href = downloadUrl;

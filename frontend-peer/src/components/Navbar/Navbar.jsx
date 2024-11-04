@@ -6,13 +6,10 @@ const Navbar = ({ isLoggedIn, handleLogout }) => {
   return (
     <Nav>
       <NavLink to="/" exact>
-        <img src={logo} alt="Logo" style={{ height: '50px', width: '50px', borderRadius: '50%'  }} /> 
+        <img src={logo} alt="Logo" style={{width:"100px"}}/> 
       </NavLink>
       <Bar />
       <NavMenu>
-        <NavLink to="/about" activeStyle={{ fontWeight: 'bold', color: 'red' }}>
-          Hướng dẫn sử dụng
-        </NavLink>
       </NavMenu>
       {isLoggedIn ? (
         <NavBtn>

@@ -8,9 +8,10 @@ const Download = () => {
 
   const handleDownload = async () => {
     if (!magnetLink) {
-      setMessage("Please enter a magnet link to download.");
+      setMessage("Vui lòng nhập magnet link để tải xuống.");
       return;
     }
+
     try {
       const peerId = document.cookie
         .split('; ')
@@ -20,6 +21,7 @@ const Download = () => {
         setMessage("Bạn cần phải đăng nhập trước khi kết nối tới peer.");
         return;
       }
+
       const response = await axios.post(
         `http://127.0.0.1:5000/tracker/downloading/${magnetLink}`,
         {}, 
@@ -27,17 +29,28 @@ const Download = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, 
+          withCredentials: true
         }
       );
 
       if (response.status === 200) {
-        setMessage("Đã tải file thành công và được lưu ở ổ đĩa C thư mục Downloads.");
+        const { pieces, file_name } = response.data;
+        const decodedPieces = pieces.map(piece => Uint8Array.from(atob(piece), c => c.charCodeAt(0)));
+        const combinedBlob = new Blob(decodedPieces);
+        const downloadUrl = window.URL.createObjectURL(combinedBlob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.setAttribute('download', file_name);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        setMessage("File đã sẵn sàng để tải về.");
       } else {
-        setMessage("Failed to download file.");
+        setMessage("Không thể tải file.");
       }
     } catch (error) {
-      setMessage("Failed to download file.");
+      setMessage("Không thể tải file.");
     }
   };
 
@@ -46,7 +59,7 @@ const Download = () => {
       <h2>Download File</h2>
       <input
         type="text"
-        placeholder="Enter magnet link"
+        placeholder="Nhập magnet link"
         value={magnetLink}
         onChange={(e) => setMagnetLink(e.target.value)}
         className="download-input"

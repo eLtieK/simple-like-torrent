@@ -102,8 +102,12 @@ def request_piece(peer_id, piece_index, pieces, requested_pieces, queue_lock, me
                 piece_data = client_socket.recv(4096)  # Nhận dữ liệu tối đa 4096 bytes mỗi lần
                 if not piece_data:  # Kiểm tra nếu không còn dữ liệu
                     break
-                data += piece_data  # Nối dữ liệu vào biến data
 
+                if len(piece_data) < 4096:
+                    data += piece_data
+                    break
+
+                data += piece_data  # Nối dữ liệu vào biến data
 
             if data == "PIECE_NOT_FOUND":
                 print(f"Piece {piece_index} not found on peer {peer_ip}:{peer_port}")
@@ -128,6 +132,8 @@ def request_pieces_from_peers(peer_list, piece_indexes, torrent_data, available_
     else: 
         pieces = [None] * (max(max(available_pieces), max(piece_indexes)) + 1)
 
+    print(peer_list, piece_indexes, available_pieces)
+    print(len(pieces))
     requested_pieces = set()  # Set để lưu các pieces đang được yêu cầu
     queue_lock = threading.Lock()
     threads = []
@@ -139,13 +145,13 @@ def request_pieces_from_peers(peer_list, piece_indexes, torrent_data, available_
     for piece_index in piece_indexes:
         if piece_index not in available_pieces:  # Kiểm tra piece có sẵn
             piece_queue.put(piece_index)
+
     #print(peer_id, piece_index, pieces, requested_pieces, queue_lock, metainfo_id)
     while not piece_queue.empty():
         piece_index = piece_queue.get()
 
         # Chọn peer có piece đó theo vòng lặp danh sách
         peer_id = peer_list[piece_index % len(peer_list)]
-
         with queue_lock:
             if piece_index not in requested_pieces:
                 requested_pieces.add(piece_index)
@@ -161,10 +167,27 @@ def request_pieces_from_peers(peer_list, piece_indexes, torrent_data, available_
 
     return pieces
 
+def is_port_open(ip, port, timeout=1):
+    """
+    Kiểm tra xem IP và cổng có đang lắng nghe kết nối không.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.settimeout(timeout)
+        try:
+            sock.connect((ip, port))
+            return True  # Kết nối thành công, nghĩa là cổng đang lắng nghe
+        except (socket.timeout, ConnectionRefusedError):
+            return False  # Kết nối thất bại, nghĩa là cổng không có ai lắng nghe
+
 def run_peer_server(ip, port, peer_id):
     peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    if is_port_open(ip, port):
+        print(f"Peer server đã chạy trên {ip}:{port}. Không cần khởi động lại.")
+        return {"status": f"Peer server đã chạy trên {ip}:{port}"}
+    
     peer_socket.bind((ip, port))
-    peer_socket.listen(10)
+    peer_socket.listen(50)
     
     while True:
         client_socket, addr = peer_socket.accept()
@@ -179,7 +202,6 @@ def run_peer_server(ip, port, peer_id):
             except Exception as e:
                 print(f"Error processing request: {str(e)}")
                 client_socket.send(b"ERROR")
-        client_socket.close()
 
 def send_piece_data(piece_index, client_socket, peer_id, metainfo_id):
     """Hàm này gửi dữ liệu của piece được yêu cầu về cho client."""
@@ -208,7 +230,9 @@ def send_piece_data(piece_index, client_socket, peer_id, metainfo_id):
                 if sent == 0:
                     raise RuntimeError("Socket connection broken")
                 total_sent += sent  # Cập nhật số bytes đã gửi
+
         else:
+            client_socket.send(b"PIECE_NOT_FOUND")
             print("Không tìm thấy piece với piece_index yêu cầu.")
     else:
         # Nếu piece không tồn tại, trả về thông báo lỗi

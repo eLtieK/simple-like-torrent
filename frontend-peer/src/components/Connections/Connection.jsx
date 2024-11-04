@@ -32,10 +32,10 @@ const Connection = ({ onConnect, isLoggedIn }) => {
       });
       const { ip_address, port } = peerInfoResponse.data;
 
-      // const response = await axios.post(`http://127.0.0.1:5000/peer/start_peer`, {
-      //   ip_address,
-      //   port,
-      // });
+      const response = await axios.post(`http://127.0.0.1:5000/peer/start_peer`, {
+        ip_address,
+        port,
+      });
       
       setStatus(`Connected successfully from IP: ${ip_address} on Port: ${port}`);
       
